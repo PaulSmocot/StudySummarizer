@@ -1,0 +1,21 @@
+## .NET build output
+bin/
+obj/
+out/
+
+## User-specific / IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+## Rider
+.idea/
+
+## Secrets / local config (never commit)
+appsettings.*.local.json
+secrets.json
+
+## OS files
+.DS_Store
+Thumbs.db
