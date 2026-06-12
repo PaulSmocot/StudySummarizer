@@ -1,8 +1,10 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using StudySummarizer.API.Middleware;
 using StudySummarizer.Infrastructure.Data;
 using StudySummarizer.Service.Interfaces;
 using StudySummarizer.Service.Services;
+using StudySummarizer.Service.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,8 @@ builder.Services.AddScoped<ITextExtractor, TextExtractor>();
 builder.Services.AddScoped<ISummarizer, StubSummarizer>();
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<ISummaryService, SummaryService>();
+
+builder.Services.AddValidatorsFromAssemblyContaining<SummarizeRequestValidator>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

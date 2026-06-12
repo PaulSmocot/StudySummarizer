@@ -9,8 +9,5 @@ public class Summary : BaseEntity
     public string Length { get; set; } = "medium";
     public string? Focus { get; set; }
 
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-
     public Document? Document { get; set; }
 }

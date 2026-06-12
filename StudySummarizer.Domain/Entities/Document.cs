@@ -22,7 +22,5 @@ public class Document : BaseEntity
 
     public DocumentStatus Status { get; set; } = DocumentStatus.Uploaded;
 
-    public DateTime UploadedAt { get; set; }
-
-    public Summary? Summary { get; set; }
+    public ICollection<Summary> Summaries { get; set; } = [];
 }

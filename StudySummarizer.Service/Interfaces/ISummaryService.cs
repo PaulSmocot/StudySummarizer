@@ -6,7 +6,5 @@ public interface ISummaryService
 {
     Task<SummaryResponse> SummarizeAsync(Guid documentId, SummarizeRequest request);
 
-    Task<SummaryResponse?> GetSummaryAsync(Guid documentId);
-
-    Task<SummaryResponse?> UpdateSummaryAsync(Guid documentId, SummarizeRequest request);
+    Task<IEnumerable<SummaryResponse>?> GetSummariesAsync(Guid documentId);
 }

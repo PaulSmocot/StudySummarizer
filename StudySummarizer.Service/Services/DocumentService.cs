@@ -1,36 +1,29 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using StudySummarizer.Domain.Entities;
 using StudySummarizer.Infrastructure.Data;
 using StudySummarizer.Service.Dtos;
-using StudySummarizer.Service.Exceptions;
 using StudySummarizer.Service.Interfaces;
+using ValidationException = StudySummarizer.Service.Exceptions.ValidationException;
 
 namespace StudySummarizer.Service.Services;
 
 public class DocumentService : IDocumentService
 {
-    private const long MaxFileSize = 20 * 1024 * 1024;
-
-    private static readonly string[] AllowedExtensions = [".pdf", ".docx", ".txt"];
-
     private readonly AppDbContext _db;
+    private readonly IValidator<UploadFileInput> _uploadValidator;
 
-    public DocumentService(AppDbContext db)
+    public DocumentService(AppDbContext db, IValidator<UploadFileInput> uploadValidator)
     {
         _db = db;
+        _uploadValidator = uploadValidator;
     }
 
     public async Task<DocumentResponse> UploadAsync(UploadFileInput input)
     {
-        if (input.Content is null || input.SizeBytes == 0)
-            throw new ValidationException("No file sent or file is empty.");
-
-        if (input.SizeBytes > MaxFileSize)
-            throw new ValidationException($"File too large. Maximum {MaxFileSize / 1024 / 1024} MB.");
-
-        var extension = Path.GetExtension(input.FileName).ToLowerInvariant();
-        if (!AllowedExtensions.Contains(extension))
-            throw new ValidationException($"Invalid type. Accepted: {string.Join(", ", AllowedExtensions)}");
+        var validation = await _uploadValidator.ValidateAsync(input);
+        if (!validation.IsValid)
+            throw new ValidationException(string.Join(" ", validation.Errors.Select(e => e.ErrorMessage)));
 
         var document = new Document
         {
@@ -40,7 +33,7 @@ public class DocumentService : IDocumentService
             SizeBytes = input.SizeBytes,
             Content = input.Content,
             Status = DocumentStatus.Uploaded,
-            UploadedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow
         };
 
         _db.Documents.Add(document);
@@ -52,8 +45,8 @@ public class DocumentService : IDocumentService
     public async Task<IEnumerable<DocumentResponse>> GetAllAsync()
     {
         var documents = await _db.Documents
-            .Include(d => d.Summary)
-            .OrderByDescending(d => d.UploadedAt)
+            .Include(d => d.Summaries)
+            .OrderByDescending(d => d.CreatedAt)
             .ToListAsync();
 
         return documents.Select(ToResponse);
@@ -62,7 +55,7 @@ public class DocumentService : IDocumentService
     public async Task<DocumentResponse?> GetByIdAsync(Guid id)
     {
         var document = await _db.Documents
-            .Include(d => d.Summary)
+            .Include(d => d.Summaries)
             .FirstOrDefaultAsync(d => d.Id == id);
 
         return document is null ? null : ToResponse(document);
@@ -94,7 +87,7 @@ public class DocumentService : IDocumentService
         d.ContentType,
         d.SizeBytes,
         d.Status,
-        d.UploadedAt,
-        d.Summary is not null
+        d.CreatedAt,
+        d.Summaries.Count
     );
 }

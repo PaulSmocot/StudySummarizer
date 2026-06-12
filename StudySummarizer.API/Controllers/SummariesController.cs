@@ -8,34 +8,25 @@ namespace StudySummarizer.API.Controllers;
 [Route("api/documents/{documentId:guid}")]
 public class SummariesController : ControllerBase
 {
-    private readonly ISummaryService _summaries;
+    private readonly ISummaryService _summaryService;
 
-    public SummariesController(ISummaryService summaries)
+    public SummariesController(ISummaryService summaryService)
     {
-        _summaries = summaries;
+        _summaryService = summaryService;
     }
 
     [HttpPost("summarize")]
     public async Task<ActionResult<SummaryResponse>> Summarize(Guid documentId, SummarizeRequest request)
     {
-        return Ok(await _summaries.SummarizeAsync(documentId, request));
+        return Ok(await _summaryService.SummarizeAsync(documentId, request));
     }
 
-    [HttpGet("summary")]
-    public async Task<ActionResult<SummaryResponse>> GetSummary(Guid documentId)
+    [HttpGet("summaries")]
+    public async Task<ActionResult<IEnumerable<SummaryResponse>>> GetSummaries(Guid documentId)
     {
-        var summary = await _summaries.GetSummaryAsync(documentId);
-        return summary is null
-            ? NotFound($"No summary exists for document {documentId}. Run POST .../summarize first.")
-            : Ok(summary);
-    }
-
-    [HttpPatch("summary")]
-    public async Task<ActionResult<SummaryResponse>> UpdateSummary(Guid documentId, SummarizeRequest request)
-    {
-        var summary = await _summaries.UpdateSummaryAsync(documentId, request);
-        return summary is null
-            ? NotFound("No summary to update. Run POST .../summarize first.")
-            : Ok(summary);
+        var summaries = await _summaryService.GetSummariesAsync(documentId);
+        return summaries is null
+            ? NotFound($"Document {documentId} was not found.")
+            : Ok(summaries);
     }
 }

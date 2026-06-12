@@ -8,11 +8,11 @@ namespace StudySummarizer.API.Controllers;
 [Route("api/[controller]")]
 public class DocumentsController : ControllerBase
 {
-    private readonly IDocumentService _documents;
+    private readonly IDocumentService _documentService;
 
-    public DocumentsController(IDocumentService documents)
+    public DocumentsController(IDocumentService documentService)
     {
-        _documents = documents;
+        _documentService = documentService;
     }
 
     [HttpPost]
@@ -29,27 +29,27 @@ public class DocumentsController : ControllerBase
             memoryStream.ToArray()
         );
 
-        var response = await _documents.UploadAsync(input);
+        var response = await _documentService.UploadAsync(input);
         return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<DocumentResponse>>> GetAll()
     {
-        return Ok(await _documents.GetAllAsync());
+        return Ok(await _documentService.GetAllAsync());
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<DocumentResponse>> GetById(Guid id)
     {
-        var document = await _documents.GetByIdAsync(id);
+        var document = await _documentService.GetByIdAsync(id);
         return document is null ? NotFound($"Document {id} was not found.") : Ok(document);
     }
 
     [HttpGet("{id:guid}/file")]
     public async Task<IActionResult> Download(Guid id)
     {
-        var file = await _documents.GetFileAsync(id);
+        var file = await _documentService.GetFileAsync(id);
         return file is null
             ? NotFound($"Document {id} was not found.")
             : File(file.Content, file.ContentType, file.FileName);
@@ -58,7 +58,7 @@ public class DocumentsController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await _documents.DeleteAsync(id);
+        var deleted = await _documentService.DeleteAsync(id);
         return deleted ? NoContent() : NotFound($"Document {id} was not found.");
     }
 }

@@ -9,7 +9,7 @@ public record DocumentResponse(
     long SizeBytes,
     DocumentStatus Status,
     DateTime UploadedAt,
-    bool HasSummary
+    int SummaryCount
 );
 
 public record SummaryResponse(

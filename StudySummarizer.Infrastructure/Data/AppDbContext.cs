@@ -15,9 +15,9 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Document>()
-            .HasOne(d => d.Summary)
+            .HasMany(d => d.Summaries)
             .WithOne(s => s.Document)
-            .HasForeignKey<Summary>(s => s.DocumentId)
+            .HasForeignKey(s => s.DocumentId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
